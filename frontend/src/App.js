@@ -1,35 +1,81 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CartProvider, useCart } from './contexts/CartContext';
 import ProductList from './components/ProductList';
+import Cart from './pages/Cart';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import './index.css';
+
+// Компонент навигации с отображением количества товаров в корзине
+const Navbar = () => {
+    const { user, logout } = useAuth();
+    const { cartCount } = useCart();
+
+    return (
+        <nav className="navbar">
+            <div className="logo">
+                🍰 Вкусняшка
+            </div>
+            <div className="nav-links">
+                <Link to="/">Главная</Link>
+                {user ? (
+                    <>
+                        <Link to="/cart">
+                            🛒 Корзина {cartCount > 0 && <span style={{background: '#ff6699', borderRadius: '50%', padding: '2px 8px', marginLeft: '5px'}}>{cartCount}</span>}
+                        </Link>
+                        <button onClick={logout} style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginLeft: '20px'}}>
+                            Выйти 👋
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/login">Вход</Link>
+                        <Link to="/register">Регистрация</Link>
+                    </>
+                )}
+            </div>
+        </nav>
+    );
+};
 
 const PrivateRoute = ({ children }) => {
     const { user, loading } = useAuth();
-    if (loading) return <div>Загрузка...</div>;
+    if (loading) return <div style={{textAlign: 'center', padding: 50}}>🍰 Загрузка...</div>;
     return user ? children : <Navigate to="/login" />;
+};
+
+const AppContent = () => {
+    return (
+        <Router>
+            <Navbar />
+            <div className="container">
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/cart" element={
+                        <PrivateRoute>
+                            <Cart />
+                        </PrivateRoute>
+                    } />
+                    <Route path="/" element={
+                        <PrivateRoute>
+                            <ProductList />
+                        </PrivateRoute>
+                    } />
+                </Routes>
+            </div>
+        </Router>
+    );
 };
 
 const App = () => {
     return (
         <AuthProvider>
-            <Router>
-                <div>
-                    <h1 style={{ textAlign: 'center', padding: '20px', backgroundColor: '#2c3e50', color: 'white', margin: 0 }}>
-                        🍰 Вкусняшка
-                    </h1>
-                    <Routes>
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/" element={
-                            <PrivateRoute>
-                                <ProductList />
-                            </PrivateRoute>
-                        } />
-                    </Routes>
-                </div>
-            </Router>
+            <CartProvider>
+                <AppContent />
+            </CartProvider>
         </AuthProvider>
     );
 };
