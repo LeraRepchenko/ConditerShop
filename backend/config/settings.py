@@ -17,11 +17,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # сторонние приложения
+    # сторонние
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    # свои приложения
+    'django_filters',   # ← должна быть эта строка
+    # свои
     'users',
     'shop',
     'cart',
