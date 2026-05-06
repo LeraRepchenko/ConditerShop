@@ -9,6 +9,7 @@ import OrderHistory from './pages/OrderHistory';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import './index.css';
+import ProfilePage from './pages/ProfilePage';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -30,6 +31,8 @@ const Navbar = () => {
                         <button onClick={logout} style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginLeft: '20px'}}>
                             Выйти 👋
                         </button>
+                        <Link to="/profile">👤 Профиль</Link>
+
                     </>
                 ) : (
                     <>
@@ -75,6 +78,11 @@ const AppContent = () => {
                         <PrivateRoute>
                             <ProductList />
                         </PrivateRoute>
+                    } />
+                    <Route path="/profile" element={
+                         <PrivateRoute>
+                           <ProfilePage />
+                         </PrivateRoute>
                     } />
                 </Routes>
             </div>
