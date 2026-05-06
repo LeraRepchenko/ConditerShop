@@ -154,8 +154,8 @@ const ProductList = () => {
                                 )}
                                 <div style={styles.cardButtons}>
                                     <Link to={`/product/${product.id}`} style={styles.detailLink}>
-                                        <button style={styles.detailBtn}>Подробнее</button>
-                                    </Link>
+                            <button style={styles.detailBtn}>Подробнее</button>
+</Link>
                                     <button
                                         onClick={() => handleAddToCart(product.id)}
                                         disabled={!product.is_available}

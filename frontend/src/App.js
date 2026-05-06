@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import './index.css';
 import ProfilePage from './pages/ProfilePage';
+import ProductDetailPage from './pages/ProductDetailPage';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -84,6 +85,11 @@ const AppContent = () => {
                            <ProfilePage />
                          </PrivateRoute>
                     } />
+                    <Route path="/product/:id" element={
+    <PrivateRoute>
+        <ProductDetailPage />
+    </PrivateRoute>
+} />
                 </Routes>
             </div>
         </Router>
