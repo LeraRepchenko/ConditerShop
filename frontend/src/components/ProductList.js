@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import api from '../services/api';
+import CategoryList from './CategoryList';
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
@@ -10,22 +11,27 @@ const ProductList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [sortBy, setSortBy] = useState(''); // 'price_asc', 'price_desc', 'newest'
     const { addToCart } = useCart();
 
     useEffect(() => {
         fetchProducts();
-    }, [searchTerm, currentPage]);
+    }, [searchTerm, currentPage, selectedCategory, sortBy]);
 
     const fetchProducts = async () => {
         setLoading(true);
         try {
             const params = {
                 page: currentPage,
-                ...(searchTerm && { search: searchTerm })
+                ...(searchTerm && { search: searchTerm }),
+                ...(selectedCategory && { category: selectedCategory }),
+                ...(sortBy === 'price_asc' && { ordering: 'price' }),
+                ...(sortBy === 'price_desc' && { ordering: '-price' }),
+                ...(sortBy === 'newest' && { ordering: '-created_at' }),
             };
             const response = await api.get('/products/', { params });
 
-            // Поддержка пагинации от DRF
             if (response.data.results) {
                 setProducts(response.data.results);
                 setTotalPages(Math.ceil(response.data.count / 10));
@@ -51,9 +57,14 @@ const ProductList = () => {
         }
     };
 
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-        setCurrentPage(1); // сбрасываем на первую страницу при поиске
+    const handleCategorySelect = (categoryId) => {
+        setSelectedCategory(categoryId);
+        setCurrentPage(1);
+    };
+
+    const handleSortChange = (e) => {
+        setSortBy(e.target.value);
+        setCurrentPage(1);
     };
 
     const goToPage = (page) => {
@@ -67,58 +78,92 @@ const ProductList = () => {
 
     return (
         <div>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '15px'}}>
+            <div style={styles.header}>
                 <h2>🍰 Наши кондитерские изделия</h2>
-                <div style={{position: 'relative'}}>
-                    <input
-                        type="text"
-                        placeholder="🔍 Поиск тортов, пирожных..."
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        style={{width: '250px', padding: '10px 15px', borderRadius: '30px', border: '2px solid #ffccdd'}}
-                    />
-                    {searchTerm && (
-                        <span
-                            onClick={() => setSearchTerm('')}
-                            style={{position: 'absolute', right: '15px', top: '10px', cursor: 'pointer', color: '#ff6699'}}
-                        >
-                            ✕
-                        </span>
-                    )}
+                <div style={styles.controls}>
+                    <div style={styles.searchBox}>
+                        <input
+                            type="text"
+                            placeholder="🔍 Поиск..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            style={styles.searchInput}
+                        />
+                        {searchTerm && (
+                            <span
+                                onClick={() => setSearchTerm('')}
+                                style={styles.clearSearch}
+                            >
+                                ✕
+                            </span>
+                        )}
+                    </div>
+
+                    <select value={sortBy} onChange={handleSortChange} style={styles.select}>
+                        <option value="">📊 Сортировка</option>
+                        <option value="price_asc">💰 По возрастанию цены</option>
+                        <option value="price_desc">💰 По убыванию цены</option>
+                        <option value="newest">🆕 Сначала новинки</option>
+                    </select>
                 </div>
             </div>
 
+            <CategoryList
+                onSelectCategory={handleCategorySelect}
+                selectedCategory={selectedCategory}
+            />
+
             {searchTerm && (
-                <p style={{marginBottom: '20px', color: '#888'}}>
+                <p style={styles.resultCount}>
                     Найдено товаров: {totalProducts}
                 </p>
             )}
 
             {products.length === 0 ? (
-                <div style={{textAlign: 'center', padding: 50}}>
+                <div style={styles.empty}>
                     <p>😔 Ничего не найдено</p>
-                    <button onClick={() => setSearchTerm('')}>Сбросить поиск</button>
+                    <button onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory(null);
+                        setSortBy('');
+                    }}>Сбросить фильтры</button>
                 </div>
             ) : (
                 <>
-                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px'}}>
+                    <div style={styles.grid}>
                         {products.map((product) => (
-                            <div key={product.id} className="card">
+                            <div key={product.id} className="card" style={styles.card}>
                                 {product.photo && (
                                     <img
                                         src={`http://localhost:8000${product.photo}`}
                                         alt={product.title}
-                                        style={{width: '100%', height: '200px', objectFit: 'cover', borderRadius: '15px'}}
+                                        style={styles.cardImage}
                                     />
                                 )}
+                                {!product.photo && (
+                                    <div style={styles.noImage}>🍰</div>
+                                )}
                                 <h3>{product.title}</h3>
-                                <p style={{fontSize: '20px', color: '#ff6699', fontWeight: 'bold'}}>{product.price} ₽</p>
-                                <p style={{color: '#888'}}>{product.category_title}</p>
-                                <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
-                                    <Link to={`/product/${product.id}`} style={{textDecoration: 'none'}}>
-                                        <button style={{background: '#ccc', color: '#333'}}>Подробнее</button>
+                                <p style={styles.price}>{product.price} ₽</p>
+                                <p style={styles.category}>{product.category_title}</p>
+                                {!product.is_available && (
+                                    <p style={styles.soldOut}>❌ Нет в наличии</p>
+                                )}
+                                <div style={styles.cardButtons}>
+                                    <Link to={`/product/${product.id}`} style={styles.detailLink}>
+                                        <button style={styles.detailBtn}>Подробнее</button>
                                     </Link>
-                                    <button onClick={() => handleAddToCart(product.id)}>
+                                    <button
+                                        onClick={() => handleAddToCart(product.id)}
+                                        disabled={!product.is_available}
+                                        style={{
+                                            ...styles.cartBtn,
+                                            opacity: product.is_available ? 1 : 0.5
+                                        }}
+                                    >
                                         🛒 В корзину
                                     </button>
                                 </div>
@@ -126,9 +171,8 @@ const ProductList = () => {
                         ))}
                     </div>
 
-                    {/* Пагинация */}
                     {totalPages > 1 && (
-                        <div style={{display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '40px', flexWrap: 'wrap'}}>
+                        <div style={styles.pagination}>
                             <button
                                 onClick={() => goToPage(currentPage - 1)}
                                 disabled={currentPage === 1}
@@ -139,7 +183,6 @@ const ProductList = () => {
 
                             {[...Array(totalPages).keys()].map(i => {
                                 const pageNum = i + 1;
-                                // Показываем текущую страницу +-2
                                 if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)) {
                                     return (
                                         <button
@@ -147,7 +190,11 @@ const ProductList = () => {
                                             onClick={() => goToPage(pageNum)}
                                             style={{
                                                 background: pageNum === currentPage ? '#ff6699' : '#ffccdd',
-                                                color: pageNum === currentPage ? 'white' : '#4a2c3a'
+                                                color: pageNum === currentPage ? 'white' : '#4a2c3a',
+                                                border: 'none',
+                                                padding: '8px 14px',
+                                                borderRadius: '20px',
+                                                cursor: 'pointer',
                                             }}
                                         >
                                             {pageNum}
@@ -172,6 +219,127 @@ const ProductList = () => {
             )}
         </div>
     );
+};
+
+const styles = {
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '25px',
+        flexWrap: 'wrap',
+        gap: '15px',
+    },
+    controls: {
+        display: 'flex',
+        gap: '15px',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+    },
+    searchBox: {
+        position: 'relative',
+    },
+    searchInput: {
+        padding: '10px 15px',
+        borderRadius: '30px',
+        border: '2px solid #ffccdd',
+        fontSize: '14px',
+        width: '220px',
+    },
+    clearSearch: {
+        position: 'absolute',
+        right: '15px',
+        top: '10px',
+        cursor: 'pointer',
+        color: '#ff6699',
+    },
+    select: {
+        padding: '10px 15px',
+        borderRadius: '30px',
+        border: '2px solid #ffccdd',
+        fontSize: '14px',
+        background: 'white',
+        cursor: 'pointer',
+    },
+    resultCount: {
+        marginBottom: '20px',
+        color: '#888',
+    },
+    grid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '25px',
+        marginTop: '20px',
+    },
+    card: {
+        padding: '15px',
+        textAlign: 'center',
+    },
+    cardImage: {
+        width: '100%',
+        height: '200px',
+        objectFit: 'cover',
+        borderRadius: '15px',
+    },
+    noImage: {
+        width: '100%',
+        height: '200px',
+        background: '#ffccdd',
+        borderRadius: '15px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '50px',
+    },
+    price: {
+        fontSize: '20px',
+        color: '#ff6699',
+        fontWeight: 'bold',
+    },
+    category: {
+        color: '#888',
+        fontSize: '12px',
+    },
+    soldOut: {
+        color: '#ff6666',
+        marginTop: '10px',
+    },
+    cardButtons: {
+        display: 'flex',
+        gap: '10px',
+        justifyContent: 'center',
+        marginTop: '15px',
+    },
+    detailLink: {
+        textDecoration: 'none',
+    },
+    detailBtn: {
+        background: '#ccc',
+        color: '#333',
+        border: 'none',
+        padding: '8px 16px',
+        borderRadius: '25px',
+        cursor: 'pointer',
+    },
+    cartBtn: {
+        background: 'linear-gradient(135deg, #ff99bb 0%, #ff6699 100%)',
+        color: 'white',
+        border: 'none',
+        padding: '8px 16px',
+        borderRadius: '25px',
+        cursor: 'pointer',
+    },
+    pagination: {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '10px',
+        marginTop: '40px',
+        flexWrap: 'wrap',
+    },
+    empty: {
+        textAlign: 'center',
+        padding: '50px',
+    },
 };
 
 export default ProductList;

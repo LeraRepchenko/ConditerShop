@@ -1,5 +1,4 @@
-from rest_framework import viewsets, permissions
-from rest_framework import filters
+from rest_framework import viewsets, permissions, filters
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductListSerializer, ProductDetailSerializer, \
     ProductCreateUpdateSerializer
@@ -15,9 +14,17 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.filter(is_available=True)
     permission_classes = [IsAdminOrReadOnly]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]  # убрали DjangoFilterBackend
     search_fields = ['title', 'description']
     ordering_fields = ['price', 'created_at', 'title']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Ручная фильтрация по категории
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
