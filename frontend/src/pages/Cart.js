@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 
+// Функция для получения правильного URL изображения (такая же как в других файлах)
+const getImageUrl = (photo) => {
+    if (!photo) return null;
+    if (photo.startsWith('http')) return photo;
+    if (photo.startsWith('/media/')) return `http://localhost:8000${photo}`;
+    if (photo.startsWith('media/')) return `http://localhost:8000/${photo}`;
+    return `http://localhost:8000/media/${photo}`;
+};
+
 const Cart = () => {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -100,36 +109,39 @@ const Cart = () => {
             <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
                 <div style={{flex: 2}}>
                     {cart.items.map((item) => (
-                        <div key={item.id} className="card" style={{display: 'flex', gap: '15px', marginBottom: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
+                        <div key={item.id} style={styles.cartItem}>
                             {item.product.photo && (
                                 <img
-                                    src={`http://localhost:8000${item.product.photo}`}
+                                    src={getImageUrl(item.product.photo)}
                                     alt={item.product.title}
-                                    style={{width: '80px', height: '80px', objectFit: 'cover', borderRadius: '10px'}}
+                                    style={styles.productImage}
                                 />
                             )}
-                            <div style={{flex: 1, minWidth: '120px'}}>
-                                <h3 style={{margin: 0}}>{item.product.title}</h3>
-                                <p style={{margin: '5px 0', color: '#ff6699'}}>{item.product.price} руб.</p>
+                            {!item.product.photo && (
+                                <div style={styles.productImagePlaceholder}>🍰</div>
+                            )}
+                            <div style={styles.productInfo}>
+                                <h3 style={styles.productTitle}>{item.product.title}</h3>
+                                <p style={styles.productPrice}>{item.product.price} ₽</p>
                             </div>
-                            <div>
-                                <label>Количество: </label>
+                            <div style={styles.quantityControl}>
+                                <label>Кол-во:</label>
                                 <input
                                     type="number"
                                     value={item.quantity}
                                     min="1"
                                     onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                                    style={{width: '70px', marginRight: '10px'}}
+                                    style={styles.quantityInput}
                                     disabled={updating}
                                 />
                             </div>
-                            <div style={{minWidth: '100px', textAlign: 'right'}}>
-                                <strong>{item.subtotal} руб.</strong>
+                            <div style={styles.subtotal}>
+                                <strong>{item.subtotal} ₽</strong>
                             </div>
                             <button
                                 onClick={() => removeItem(item.id)}
                                 disabled={updating}
-                                style={{background: '#ff6666', padding: '8px 15px', border: 'none', borderRadius: '25px', cursor: 'pointer', color: 'white'}}
+                                style={styles.removeBtn}
                             >
                                 ❌
                             </button>
@@ -137,9 +149,9 @@ const Cart = () => {
                     ))}
                 </div>
                 <div style={{flex: 1}}>
-                    <div className="card" style={{position: 'sticky', top: '20px', padding: '20px', borderRadius: '15px', background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
-                        <h3>Итого: <strong>{cart.total_price} руб.</strong></h3>
-                        <button onClick={checkout} style={{width: '100%', marginTop: '15px', background: 'linear-gradient(135deg, #ff99bb 0%, #ff6699 100%)', color: 'white', border: 'none', padding: '12px', borderRadius: '30px', cursor: 'pointer'}}>
+                    <div style={styles.totalCard}>
+                        <h3>Итого: <strong>{cart.total_price} ₽</strong></h3>
+                        <button onClick={checkout} style={styles.checkoutBtn}>
                             Оформить заказ 🍰
                         </button>
                     </div>
@@ -173,6 +185,90 @@ const styles = {
         borderRadius: '30px',
         fontSize: '16px',
         cursor: 'pointer',
+    },
+    cartItem: {
+        display: 'flex',
+        gap: '15px',
+        marginBottom: '15px',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        padding: '15px',
+        borderRadius: '15px',
+        background: 'white',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    },
+    productImage: {
+        width: '80px',
+        height: '80px',
+        objectFit: 'cover',
+        borderRadius: '10px',
+    },
+    productImagePlaceholder: {
+        width: '80px',
+        height: '80px',
+        background: '#ffccdd',
+        borderRadius: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '40px',
+    },
+    productInfo: {
+        flex: 1,
+        minWidth: '120px',
+    },
+    productTitle: {
+        margin: 0,
+        fontSize: '16px',
+    },
+    productPrice: {
+        margin: '5px 0',
+        color: '#ff6699',
+        fontWeight: 'bold',
+    },
+    quantityControl: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+    },
+    quantityInput: {
+        width: '60px',
+        padding: '8px',
+        borderRadius: '10px',
+        border: '1px solid #ffccdd',
+        textAlign: 'center',
+    },
+    subtotal: {
+        minWidth: '100px',
+        textAlign: 'right',
+        fontWeight: 'bold',
+    },
+    removeBtn: {
+        background: '#ff6666',
+        padding: '8px 15px',
+        borderRadius: '25px',
+        border: 'none',
+        cursor: 'pointer',
+        color: 'white',
+    },
+    totalCard: {
+        position: 'sticky',
+        top: '20px',
+        padding: '20px',
+        borderRadius: '15px',
+        background: 'white',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    },
+    checkoutBtn: {
+        width: '100%',
+        marginTop: '15px',
+        background: 'linear-gradient(135deg, #ff99bb 0%, #ff6699 100%)',
+        color: 'white',
+        border: 'none',
+        padding: '12px',
+        borderRadius: '30px',
+        cursor: 'pointer',
+        fontSize: '16px',
     },
 };
 

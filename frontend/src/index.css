@@ -11,20 +11,6 @@ body {
     color: #4a2c3a;
 }
 
-/* Аниме-девушка фон (опционально) */
-body::before {
-    content: '';
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 150px;
-    height: 150px;
-    background: url('https://cdn-icons-png.flaticon.com/512/4752/4752842.png') no-repeat center;
-    background-size: contain;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 0;
-}
 
 .container {
     max-width: 1200px;

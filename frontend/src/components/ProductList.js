@@ -4,6 +4,15 @@ import { useCart } from '../contexts/CartContext';
 import api from '../services/api';
 import CategoryList from './CategoryList';
 
+// Функция для получения правильного URL изображения
+const getImageUrl = (photo) => {
+    if (!photo) return null;
+    if (photo.startsWith('http')) return photo;
+    if (photo.startsWith('/media/')) return `http://localhost:8000${photo}`;
+    if (photo.startsWith('media/')) return `http://localhost:8000/${photo}`;
+    return `http://localhost:8000/media/${photo}`;
+};
+
 const ProductList = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -12,7 +21,7 @@ const ProductList = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState(null);
-    const [sortBy, setSortBy] = useState(''); // 'price_asc', 'price_desc', 'newest'
+    const [sortBy, setSortBy] = useState('');
     const { addToCart } = useCart();
 
     useEffect(() => {
@@ -93,15 +102,11 @@ const ProductList = () => {
                             style={styles.searchInput}
                         />
                         {searchTerm && (
-                            <span
-                                onClick={() => setSearchTerm('')}
-                                style={styles.clearSearch}
-                            >
+                            <span onClick={() => setSearchTerm('')} style={styles.clearSearch}>
                                 ✕
                             </span>
                         )}
                     </div>
-
                     <select value={sortBy} onChange={handleSortChange} style={styles.select}>
                         <option value="">📊 Сортировка</option>
                         <option value="price_asc">💰 По возрастанию цены</option>
@@ -111,25 +116,18 @@ const ProductList = () => {
                 </div>
             </div>
 
-            <CategoryList
-                onSelectCategory={handleCategorySelect}
-                selectedCategory={selectedCategory}
-            />
+            <CategoryList onSelectCategory={handleCategorySelect} selectedCategory={selectedCategory} />
 
             {searchTerm && (
-                <p style={styles.resultCount}>
-                    Найдено товаров: {totalProducts}
-                </p>
+                <p style={styles.resultCount}>Найдено товаров: {totalProducts}</p>
             )}
 
             {products.length === 0 ? (
                 <div style={styles.empty}>
                     <p>😔 Ничего не найдено</p>
-                    <button onClick={() => {
-                        setSearchTerm('');
-                        setSelectedCategory(null);
-                        setSortBy('');
-                    }}>Сбросить фильтры</button>
+                    <button onClick={() => { setSearchTerm(''); setSelectedCategory(null); setSortBy(''); }}>
+                        Сбросить фильтры
+                    </button>
                 </div>
             ) : (
                 <>
@@ -137,31 +135,30 @@ const ProductList = () => {
                         {products.map((product) => (
                             <div key={product.id} className="card" style={styles.card}>
                                 {product.photo && (
-                                    <img
-                                        src={`http://localhost:8000${product.photo}`}
-                                        alt={product.title}
-                                        style={styles.cardImage}
-                                    />
+                                    <img src={getImageUrl(product.photo)} alt={product.title} style={styles.cardImage} />
                                 )}
-                                {!product.photo && (
-                                    <div style={styles.noImage}>🍰</div>
-                                )}
+                                {!product.photo && <div style={styles.noImage}>🍰</div>}
+
                                 <h3>{product.title}</h3>
                                 <p style={styles.price}>{product.price} ₽</p>
                                 <p style={styles.category}>{product.category_title}</p>
+
+                                {/* БЛОК "НЕТ В НАЛИЧИИ" - ЕСЛИ ТОВАР НЕДОСТУПЕН */}
                                 {!product.is_available && (
                                     <p style={styles.soldOut}>❌ Нет в наличии</p>
                                 )}
+
                                 <div style={styles.cardButtons}>
                                     <Link to={`/product/${product.id}`} style={styles.detailLink}>
-                            <button style={styles.detailBtn}>Подробнее</button>
-</Link>
+                                        <button style={styles.detailBtn}>Подробнее</button>
+                                    </Link>
                                     <button
                                         onClick={() => handleAddToCart(product.id)}
                                         disabled={!product.is_available}
                                         style={{
                                             ...styles.cartBtn,
-                                            opacity: product.is_available ? 1 : 0.5
+                                            opacity: product.is_available ? 1 : 0.5,
+                                            cursor: product.is_available ? 'pointer' : 'not-allowed'
                                         }}
                                     >
                                         🛒 В корзину
@@ -173,14 +170,9 @@ const ProductList = () => {
 
                     {totalPages > 1 && (
                         <div style={styles.pagination}>
-                            <button
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                style={{opacity: currentPage === 1 ? 0.5 : 1}}
-                            >
+                            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
                                 ◀ Назад
                             </button>
-
                             {[...Array(totalPages).keys()].map(i => {
                                 const pageNum = i + 1;
                                 if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)) {
@@ -190,27 +182,18 @@ const ProductList = () => {
                                             onClick={() => goToPage(pageNum)}
                                             style={{
                                                 background: pageNum === currentPage ? '#ff6699' : '#ffccdd',
-                                                color: pageNum === currentPage ? 'white' : '#4a2c3a',
-                                                border: 'none',
-                                                padding: '8px 14px',
-                                                borderRadius: '20px',
-                                                cursor: 'pointer',
+                                                color: pageNum === currentPage ? 'white' : '#4a2c3a'
                                             }}
                                         >
                                             {pageNum}
                                         </button>
                                     );
                                 } else if (pageNum === currentPage - 3 || pageNum === currentPage + 3) {
-                                    return <span key={pageNum} style={{padding: '0 5px'}}>...</span>;
+                                    return <span key={pageNum}>...</span>;
                                 }
                                 return null;
                             })}
-
-                            <button
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                style={{opacity: currentPage === totalPages ? 0.5 : 1}}
-                            >
+                            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
                                 Вперед ▶
                             </button>
                         </div>
@@ -222,124 +205,26 @@ const ProductList = () => {
 };
 
 const styles = {
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '25px',
-        flexWrap: 'wrap',
-        gap: '15px',
-    },
-    controls: {
-        display: 'flex',
-        gap: '15px',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-    },
-    searchBox: {
-        position: 'relative',
-    },
-    searchInput: {
-        padding: '10px 15px',
-        borderRadius: '30px',
-        border: '2px solid #ffccdd',
-        fontSize: '14px',
-        width: '220px',
-    },
-    clearSearch: {
-        position: 'absolute',
-        right: '15px',
-        top: '10px',
-        cursor: 'pointer',
-        color: '#ff6699',
-    },
-    select: {
-        padding: '10px 15px',
-        borderRadius: '30px',
-        border: '2px solid #ffccdd',
-        fontSize: '14px',
-        background: 'white',
-        cursor: 'pointer',
-    },
-    resultCount: {
-        marginBottom: '20px',
-        color: '#888',
-    },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '25px',
-        marginTop: '20px',
-    },
-    card: {
-        padding: '15px',
-        textAlign: 'center',
-    },
-    cardImage: {
-        width: '100%',
-        height: '200px',
-        objectFit: 'cover',
-        borderRadius: '15px',
-    },
-    noImage: {
-        width: '100%',
-        height: '200px',
-        background: '#ffccdd',
-        borderRadius: '15px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '50px',
-    },
-    price: {
-        fontSize: '20px',
-        color: '#ff6699',
-        fontWeight: 'bold',
-    },
-    category: {
-        color: '#888',
-        fontSize: '12px',
-    },
-    soldOut: {
-        color: '#ff6666',
-        marginTop: '10px',
-    },
-    cardButtons: {
-        display: 'flex',
-        gap: '10px',
-        justifyContent: 'center',
-        marginTop: '15px',
-    },
-    detailLink: {
-        textDecoration: 'none',
-    },
-    detailBtn: {
-        background: '#ccc',
-        color: '#333',
-        border: 'none',
-        padding: '8px 16px',
-        borderRadius: '25px',
-        cursor: 'pointer',
-    },
-    cartBtn: {
-        background: 'linear-gradient(135deg, #ff99bb 0%, #ff6699 100%)',
-        color: 'white',
-        border: 'none',
-        padding: '8px 16px',
-        borderRadius: '25px',
-        cursor: 'pointer',
-    },
-    pagination: {
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '10px',
-        marginTop: '40px',
-        flexWrap: 'wrap',
-    },
-    empty: {
-        textAlign: 'center',
-        padding: '50px',
-    },
+    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '15px' },
+    controls: { display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' },
+    searchBox: { position: 'relative' },
+    searchInput: { padding: '10px 15px', borderRadius: '30px', border: '2px solid #ffccdd', fontSize: '14px', width: '220px' },
+    clearSearch: { position: 'absolute', right: '15px', top: '10px', cursor: 'pointer', color: '#ff6699' },
+    select: { padding: '10px 15px', borderRadius: '30px', border: '2px solid #ffccdd', fontSize: '14px', background: 'white', cursor: 'pointer' },
+    resultCount: { marginBottom: '20px', color: '#888' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '25px', marginTop: '20px' },
+    card: { padding: '15px', textAlign: 'center', background: 'white', borderRadius: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' },
+    cardImage: { width: '100%', height: '200px', objectFit: 'cover', borderRadius: '15px' },
+    noImage: { width: '100%', height: '200px', background: '#ffccdd', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '50px' },
+    price: { fontSize: '20px', color: '#ff6699', fontWeight: 'bold' },
+    category: { color: '#888', fontSize: '12px' },
+    soldOut: { color: '#ff6666', marginTop: '10px', fontWeight: 'bold', fontSize: '14px' },
+    cardButtons: { display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' },
+    detailLink: { textDecoration: 'none' },
+    detailBtn: { background: '#ccc', color: '#333', border: 'none', padding: '8px 16px', borderRadius: '25px', cursor: 'pointer' },
+    cartBtn: { background: 'linear-gradient(135deg, #ff99bb 0%, #ff6699 100%)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '25px', cursor: 'pointer' },
+    pagination: { display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '40px', flexWrap: 'wrap' },
+    empty: { textAlign: 'center', padding: '50px' }
 };
 
 export default ProductList;
