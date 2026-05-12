@@ -7,19 +7,30 @@ from .models import Order, OrderItem
 from cart.models import Cart
 from .serializers import OrderSerializer, OrderCreateSerializer
 
+
 class OrderListView(generics.ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        # Оптимизация: prefetch_related('items', 'items__product') — загружаем позиции и товары одним запросом
+        return Order.objects.filter(user=self.request.user).order_by('-created_at').prefetch_related(
+            'items',
+            'items__product'
+        )
+
 
 class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+
+        return Order.objects.filter(user=self.request.user).prefetch_related(
+            'items',
+            'items__product'
+        )
+
 
 class OrderCreateView(generics.CreateAPIView):
     serializer_class = OrderCreateSerializer
@@ -30,7 +41,9 @@ class OrderCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        cart = get_object_or_404(Cart, user=request.user)
+
+        cart = get_object_or_404(Cart.objects.prefetch_related('items__product'), user=request.user)
+
         if not cart.items.exists():
             return Response({'error': 'Корзина пуста'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -55,6 +68,7 @@ class OrderCreateView(generics.CreateAPIView):
         cart.items.all().delete()
 
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
 
 class OrderUpdateStatusView(generics.UpdateAPIView):
     serializer_class = OrderSerializer

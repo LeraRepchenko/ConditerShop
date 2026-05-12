@@ -18,10 +18,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # сторонние
+
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'drf_spectacular',
 
     # свои
     'users',
@@ -44,6 +45,11 @@ MIDDLEWARE = [
 
 # Корневая URL-конфигурация (ИСПРАВЛЕНО: config вместо backend)
 ROOT_URLCONF = 'config.urls'
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API Интернет-магазина "Вкусняшка"',
+    'DESCRIPTION': 'Документация для курсового проекта',
+    'VERSION': '1.0.0',
+}
 
 # Шаблоны (ИСПРАВЛЕНО: убран [...])
 TEMPLATES = [
@@ -85,6 +91,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Настройки JWT
@@ -101,6 +108,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
 
 # Статика и медиа
 STATIC_URL = '/static/'

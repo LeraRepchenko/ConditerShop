@@ -57,3 +57,9 @@ class UpdateCartItemView(generics.UpdateAPIView):
     def get_queryset(self):
         cart = get_object_or_404(Cart, user=self.request.user)
         return CartItem.objects.filter(cart=cart)
+
+    def delete(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
