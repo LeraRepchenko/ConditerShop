@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import api from '../services/api';
 import CategoryList from './CategoryList';
 
-// Функция для получения правильного URL изображения
+
 const getImageUrl = (photo) => {
     if (!photo) return null;
     if (photo.startsWith('http')) return photo;
@@ -17,6 +17,7 @@ const ProductList = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(''); // ← добавляем
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
@@ -24,16 +25,27 @@ const ProductList = () => {
     const [sortBy, setSortBy] = useState('');
     const { addToCart } = useCart();
 
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+            setCurrentPage(1);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+
     useEffect(() => {
         fetchProducts();
-    }, [searchTerm, currentPage, selectedCategory, sortBy]);
+    }, [debouncedSearchTerm, currentPage, selectedCategory, sortBy]);
 
     const fetchProducts = async () => {
         setLoading(true);
         try {
             const params = {
                 page: currentPage,
-                ...(searchTerm && { search: searchTerm }),
+                ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
                 ...(selectedCategory && { category: selectedCategory }),
                 ...(sortBy === 'price_asc' && { ordering: 'price' }),
                 ...(sortBy === 'price_desc' && { ordering: '-price' }),
@@ -76,6 +88,11 @@ const ProductList = () => {
         setCurrentPage(1);
     };
 
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+
+    };
+
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
@@ -95,14 +112,18 @@ const ProductList = () => {
                             type="text"
                             placeholder="🔍 Поиск..."
                             value={searchTerm}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value);
-                                setCurrentPage(1);
-                            }}
+                            onChange={handleSearchChange}
                             style={styles.searchInput}
+                            autoFocus
                         />
                         {searchTerm && (
-                            <span onClick={() => setSearchTerm('')} style={styles.clearSearch}>
+                            <span
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setDebouncedSearchTerm('');
+                                }}
+                                style={styles.clearSearch}
+                            >
                                 ✕
                             </span>
                         )}
@@ -118,16 +139,21 @@ const ProductList = () => {
 
             <CategoryList onSelectCategory={handleCategorySelect} selectedCategory={selectedCategory} />
 
-            {searchTerm && (
-                <p style={styles.resultCount}>Найдено товаров: {totalProducts}</p>
+            {debouncedSearchTerm && (
+                <p style={styles.resultCount}>
+                    Найдено товаров: {totalProducts}
+                </p>
             )}
 
             {products.length === 0 ? (
                 <div style={styles.empty}>
                     <p>😔 Ничего не найдено</p>
-                    <button onClick={() => { setSearchTerm(''); setSelectedCategory(null); setSortBy(''); }}>
-                        Сбросить фильтры
-                    </button>
+                    <button onClick={() => {
+                        setSearchTerm('');
+                        setDebouncedSearchTerm('');
+                        setSelectedCategory(null);
+                        setSortBy('');
+                    }}>Сбросить фильтры</button>
                 </div>
             ) : (
                 <>
@@ -143,7 +169,6 @@ const ProductList = () => {
                                 <p style={styles.price}>{product.price} ₽</p>
                                 <p style={styles.category}>{product.category_title}</p>
 
-                                {/* БЛОК "НЕТ В НАЛИЧИИ" - ЕСЛИ ТОВАР НЕДОСТУПЕН */}
                                 {!product.is_available && (
                                     <p style={styles.soldOut}>❌ Нет в наличии</p>
                                 )}
@@ -157,8 +182,7 @@ const ProductList = () => {
                                         disabled={!product.is_available}
                                         style={{
                                             ...styles.cartBtn,
-                                            opacity: product.is_available ? 1 : 0.5,
-                                            cursor: product.is_available ? 'pointer' : 'not-allowed'
+                                            opacity: product.is_available ? 1 : 0.5
                                         }}
                                     >
                                         🛒 В корзину

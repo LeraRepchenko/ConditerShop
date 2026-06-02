@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';  // ← ЭТО ДОБАВИТЬ!
 import api from '../services/api';
 
 const OrderHistory = () => {
@@ -12,7 +13,6 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
         try {
             const response = await api.get('/orders/');
-            // Проверяем, массив ли пришёл, или объект с пагинацией
             if (Array.isArray(response.data)) {
                 setOrders(response.data);
             } else if (response.data.results && Array.isArray(response.data.results)) {
@@ -43,10 +43,14 @@ const OrderHistory = () => {
 
     if (!orders || orders.length === 0) {
         return (
-            <div style={{textAlign: 'center', padding: 50}}>
-                <h2>📦 У вас пока нет заказов</h2>
-                <p>Но это легко исправить!</p>
-                <a href="/" className="btn">🍰 Перейти к покупкам</a>
+            <div style={styles.emptyContainer}>
+                <div style={styles.emptyContent}>
+                    <h2>📦 У вас пока нет заказов</h2>
+                    <p style={styles.emptyText}>Но это легко исправить!</p>
+                    <Link to="/">
+                        <button style={styles.shopBtn}>🍰 Перейти к покупкам</button>
+                    </Link>
+                </div>
             </div>
         );
     }
@@ -87,6 +91,40 @@ const OrderHistory = () => {
             ))}
         </div>
     );
+};
+
+const styles = {
+    emptyContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '400px',
+        width: '100%',
+    },
+    emptyContent: {
+        textAlign: 'center',
+        padding: '40px',
+        background: 'white',
+        borderRadius: '20px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        maxWidth: '500px',
+        width: '100%',
+    },
+    emptyText: {
+        marginBottom: '30px',
+        color: '#888',
+        fontSize: '16px',
+    },
+    shopBtn: {
+        background: 'linear-gradient(135deg, #ff99bb 0%, #ff6699 100%)',
+        color: 'white',
+        border: 'none',
+        padding: '12px 30px',
+        borderRadius: '30px',
+        fontSize: '16px',
+        cursor: 'pointer',
+        transition: 'transform 0.2s',
+    },
 };
 
 export default OrderHistory;

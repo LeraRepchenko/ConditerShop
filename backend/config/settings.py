@@ -4,13 +4,13 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECRET_KEY и DEBUG (для разработки)
+
 SECRET_KEY = 'django-insecure-ваш-ключ'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
-# Установленные приложения
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'orders',
 ]
 
-# Middleware (CORS должен быть первым)
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -43,7 +43,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Корневая URL-конфигурация (ИСПРАВЛЕНО: config вместо backend)
+
 ROOT_URLCONF = 'config.urls'
 SPECTACULAR_SETTINGS = {
     'TITLE': 'API Интернет-магазина "Вкусняшка"',
@@ -51,7 +51,7 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
 }
 
-# Шаблоны (ИСПРАВЛЕНО: убран [...])
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -70,7 +70,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# База данных (SQLite для начала)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -78,10 +78,10 @@ DATABASES = {
     }
 }
 
-# Кастомная модель пользователя
+
 AUTH_USER_MODEL = 'users.User'
 
-# Настройки REST Framework
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -94,7 +94,7 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# Настройки JWT
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -103,14 +103,14 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# CORS (разрешаем React)
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
 
 
-# Статика и медиа
+
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

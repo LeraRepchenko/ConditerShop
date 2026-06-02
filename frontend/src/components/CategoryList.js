@@ -12,7 +12,7 @@ const CategoryList = ({ onSelectCategory, selectedCategory }) => {
     const fetchCategories = async () => {
         try {
             const response = await api.get('/categories/');
-            // Проверяем, массив ли пришёл, или объект с пагинацией
+
             if (Array.isArray(response.data)) {
                 setCategories(response.data);
             } else if (response.data.results && Array.isArray(response.data.results)) {

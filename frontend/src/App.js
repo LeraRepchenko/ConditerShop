@@ -12,7 +12,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import './index.css';
 
-// Компонент навигации
+
 const Navbar = () => {
     const { user, logout } = useAuth();
     const { cartCount } = useCart();
@@ -46,14 +46,14 @@ const Navbar = () => {
     );
 };
 
-// Компонент для защищённых маршрутов
+
 const PrivateRoute = ({ children }) => {
     const { user, loading } = useAuth();
     if (loading) return <div style={{ textAlign: 'center', padding: 50 }}>🍰 Загрузка...</div>;
     return user ? children : <Navigate to="/login" />;
 };
 
-// Основной компонент приложения
+
 const AppContent = () => {
     return (
         <Router>
@@ -79,7 +79,7 @@ const AppContent = () => {
     );
 };
 
-// Стили для навигации
+
 const styles = {
     cartBadge: {
         background: '#ff6699',

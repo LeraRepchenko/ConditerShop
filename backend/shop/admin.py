@@ -28,22 +28,22 @@ class ProductAdmin(admin.ModelAdmin):
         # 'views' ← удалили эту строку
     )
 
-    # По каким полям можно кликнуть для перехода к редактированию
+
     list_display_links = ('id', 'title')
 
-    # Поля, которые можно редактировать прямо в списке
+
     list_editable = ('price', 'is_available')
 
-    # Поля для поиска
+
     search_fields = ('title', 'description')
 
-    # Фильтры справа
+
     list_filter = ('category', 'is_available', 'created_at')
 
-    # Поля, только для чтения (убрали views)
-    readonly_fields = ('created_at',)  # ← было ('views', 'created_at')
 
-    # Поля для редактирования
+    readonly_fields = ('created_at',)
+
+
     fieldsets = (
         ('Основная информация', {
             'fields': ('title', 'slug', 'description', 'category')
@@ -62,10 +62,10 @@ class ProductAdmin(admin.ModelAdmin):
         }),
     )
 
-    # Автоматическое заполнение slug из title
+
     prepopulated_fields = {'slug': ('title',)}
 
-    # Действия с несколькими товарами сразу
+
     actions = ['make_available', 'make_unavailable']
 
     def make_available(self, request, queryset):
