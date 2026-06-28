@@ -85,7 +85,7 @@ ConditerShop/
 ![Активность коммитов](https://ghchart.rshah.org/LeraRepchenko)
 
 ### График активности
-(docs/скриншоты/актив.jpg)
+![График](docs/скриншоты/актив.jpg)
 
 Подробная статистика на GitHub: [Insights → Pulse](https://github.com/LeraRepchenko/ConditerShop/pulse)
 
