@@ -29,28 +29,31 @@
 ---
 
 ## 📁 Структура проекта
--ConditerShop/
--├── backend/ # Django REST API
--│ ├── config/ # Настройки проекта
--│ ├── users/ # Пользователи и JWT
--│ ├── shop/ # Товары и категории
--│ ├── cart/ # Корзина
--│ └── orders/ # Заказы
--├── frontend/ # React SPA
--│ ├── src/
--│ │ ├── components/ # Компоненты
--│ │ ├── pages/ # Страницы
--│ │ ├── contexts/ # AuthContext, CartContext
--│ │ ├── services/ # Axios API
--│ │ └── styles/ # Стили
--│ └── public/
--├── docs/
--│ ├── Курсовая Репченко/ # пояснительная записка
--│ ├── Курсовая диаграммы/ # все даиаграммы и риусунки
--│ └── Курсовая результаты работы/ # Скриншоты
--└── README.md
+## 📁 Структура проекта
 
-text
+```
+ConditerShop/
+├── backend/                    # Django REST API
+│   ├── config/                 # Настройки проекта
+│   ├── users/                  # Пользователи и JWT
+│   ├── shop/                   # Товары и категории
+│   ├── cart/                   # Корзина
+│   └── orders/                 # Заказы
+├── frontend/                   # React SPA
+│   ├── src/
+│   │   ├── components/         # Компоненты
+│   │   ├── pages/              # Страницы
+│   │   ├── contexts/           # AuthContext, CartContext
+│   │   ├── services/           # Axios API
+│   │   └── styles/             # Стили
+│   └── public/
+├── docs/
+│   ├── Курсовая Репченко/      # Пояснительная записка
+│   ├── Курсовая диаграммы/     # Диаграммы и рисунки
+│   └── Курсовая результаты работы/ # Скриншоты
+└── README.md
+```
+
 
 ---
 
