@@ -100,6 +100,25 @@ text
 ```bash
 git clone https://github.com/LeraRepchenko/ConditerShop.git
 cd ConditerShop
+2. Настройка бэкенда
+bash
+cd backend
+python -m venv venv
+# Windows: venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+Бэкенд будет доступен по адресу: http://localhost:8000
+
+3. Настройка фронтенда
+bash
+cd frontend
+npm install
+npm start
+Фронтенд будет доступен по адресу: http://localhost:3000
+
 4. API-документация
 После запуска бэкенда документация API доступна по адресам:
 
