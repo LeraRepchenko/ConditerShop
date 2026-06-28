@@ -61,7 +61,7 @@ ConditerShop/
 
 | Страница | Скриншот |
 |:---|:---|
-| Главная | ![Главная](docs/images/main-page.png) |
+| Главная | ![Главная](docs/скриншоты/Рисунок1.png) |
 | Страница товара | ![Товар](docs/images/product-detail.png) |
 | Вход | ![Вход](docs/images/login-page.png) |
 | Регистрация | ![Регистрация](docs/images/register-page.png) |
